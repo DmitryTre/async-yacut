@@ -1,5 +1,4 @@
-from datetime import datetime, UTC
-
+from datetime import datetime, timezone
 import random
 import string
 
@@ -13,7 +12,11 @@ class URLMap(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     original = db.Column(db.String(2048))
     short = db.Column(db.String(6), unique=True, index=True)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.now(UTC))
+    timestamp = db.Column(
+        db.DateTime,
+        index=True,
+        default=datetime.now(timezone.utc)
+    )
 
     def from_dict(self, data, custom_id=None):
         """Заполняет поля модели из словаря с данными и пользовательским ID."""
