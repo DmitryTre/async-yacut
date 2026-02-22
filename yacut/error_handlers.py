@@ -9,7 +9,7 @@ class InvalidAPIUsage(Exception):
     status_code = 400
 
     def __init__(self, message, status_code=None, payload=None):
-        """Инициализирует исключение с сообщением, статусом и опциональными данными."""
+        """Инициализирует исключение."""
         super().__init__()
         self.message = message
         if status_code is not None:
@@ -23,13 +23,13 @@ class InvalidAPIUsage(Exception):
 
 @app.errorhandler(InvalidAPIUsage)
 def invalid_api_usage(error: InvalidAPIUsage):
-    """Обрабатывает пользовательские исключения API и возвращает JSON с ошибкой."""
+    """Обрабатывает пользовательские исключения API."""
     return jsonify(error.to_dict()), error.status_code
 
 
 @app.errorhandler(400)
 def bad_request(error):
-    """Обрабатывает ошибки 400 Bad Request, возвращает JSON для API-запросов."""
+    """Обрабатывает ошибки 400 Bad Request."""
     if request.content_type == 'application/json':
         return jsonify({'message': 'Отсутствует тело запроса'}), 400
     return error

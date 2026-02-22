@@ -8,7 +8,7 @@ from flask import url_for
 
 
 class URLMap(db.Model):
-    """Модель для хранения соответствий между оригинальными URL и короткими ссылками."""
+    """Модель хранения соответствий URL и коротких ссылок."""
 
     id = db.Column(db.Integer, primary_key=True)
     original = db.Column(db.String(2048))

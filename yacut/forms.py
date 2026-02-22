@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Length
 
 
 class HeadURLForm(FlaskForm):
-    """Форма для ввода оригинальной ссылки и пользовательского варианта короткой ссылки."""
+    """Форма для ввода URL и пользовательского ID короткой ссылки."""
 
     original_link = URLField(
         'Оригинальная ссылка',
