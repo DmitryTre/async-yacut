@@ -1,9 +1,4 @@
-
-import asyncio
-import aiohttp
 import os
-import random
-import string
 from dotenv import load_dotenv
 
 from flask import abort, flash, redirect, render_template, request, url_for
@@ -21,11 +16,14 @@ load_dotenv()
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
+    """Отображает форму создания короткой ссылки и обрабатывает её отправку."""
     form = HeadURLForm()
     if form.validate_on_submit():
         custom_id = form.custom_id.data
         if custom_id:
-            if URLMap.query.filter_by(short=custom_id).first() or custom_id == 'files':
+            if URLMap.query.filter_by(
+                short=custom_id
+            ).first() or custom_id == 'files':
                 flash('Предложенный вариант короткой ссылки уже существует.')
                 return render_template('index.html', form=form)
         else:
@@ -53,6 +51,7 @@ def index_view():
 
 @app.route('/files/', methods=['GET', 'POST'], strict_slashes=False)
 async def upload_files():
+    """Отображает форму загрузки файлов и обрабатывает загрузку на Я.Диск."""
     form = FileUploadForm()
     if request.method == 'GET':
         return render_template('upload_files.html', form=form)
@@ -74,7 +73,6 @@ async def upload_files():
         await uploader.upload_file(upload_url, file_data)
 
         public_url = await uploader.get_download_link(f'/ya_cut/{filename}')
-        print("Полученная ссылка на скачивание:", public_url)
 
         short_link = URLMap.get_unique_short_id()
         display_link = url_for(
@@ -92,7 +90,6 @@ async def upload_files():
             original=public_url,
             short=short_link
         )
-        print("Сохранённая ссылка в URLMap.original:", url_map.original)
         db.session.add(url_map)
         db.session.commit()
 
@@ -105,10 +102,9 @@ async def upload_files():
 
 @app.route('/<short_link>/', strict_slashes=False)
 def redirect_to_url(short_link):
+    """Перенаправляет по короткой ссылке на оригинальный URL."""
     url_map = URLMap.query.filter_by(short=short_link).first()
     if url_map:
-        print(f"Нашёл запись: short={url_map.short}, original={url_map.original}")
         return redirect(url_map.original, HTTPStatus.FOUND)
     else:
-        print(f"Запись не найдена для short_link={short_link}")
         return abort(404)

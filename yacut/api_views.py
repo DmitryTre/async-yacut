@@ -10,6 +10,7 @@ from .error_handlers import InvalidAPIUsage
 
 @app.route('/api/id/', methods=['POST'])
 def create_short_link():
+    """Создаёт короткую ссылку из переданного URL через API."""
     data = request.get_json()
     if data is None or not data:
         raise InvalidAPIUsage('Отсутствует тело запроса')
@@ -39,6 +40,7 @@ def create_short_link():
 
 @app.route('/api/id/<short_id>/', methods=['GET'], strict_slashes=False)
 def get_original_url(short_id):
+    """Возвращает оригинальный URL по короткой ссылке через API."""
     link = URLMap.query.filter_by(short=short_id.rstrip('/')).first()
     if link is None:
         raise InvalidAPIUsage('Указанный id не найден', 404)

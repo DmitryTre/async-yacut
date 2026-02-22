@@ -8,16 +8,20 @@ from flask import url_for
 
 
 class URLMap(db.Model):
+    """Модель для хранения соответствий между оригинальными URL и короткими ссылками."""
+
     id = db.Column(db.Integer, primary_key=True)
     original = db.Column(db.String(2048))
     short = db.Column(db.String(6), unique=True, index=True)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(UTC))
 
     def from_dict(self, data, custom_id=None):
+        """Заполняет поля модели из словаря с данными и пользовательским ID."""
         self.original = data['url']
         self.short = custom_id
 
     def to_dict(self):
+        """Возвращает словарь с оригинальным URL и внешней короткой ссылкой."""
         short_link = url_for(
             'redirect_to_url',
             short_link=self.short,
@@ -31,6 +35,7 @@ class URLMap(db.Model):
 
     @staticmethod
     def get_unique_short_id():
+        """Генерирует уникальный 6‑символьный ID для короткой ссылки."""
         while True:
             short_id = ''.join(random.choices(
                 (string.ascii_letters + string.digits),

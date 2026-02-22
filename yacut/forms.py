@@ -5,6 +5,8 @@ from wtforms.validators import DataRequired, Length
 
 
 class HeadURLForm(FlaskForm):
+    """Форма для ввода оригинальной ссылки и пользовательского варианта короткой ссылки."""
+
     original_link = URLField(
         'Оригинальная ссылка',
         validators=(
@@ -28,6 +30,8 @@ class HeadURLForm(FlaskForm):
 
 
 class FileUploadForm(FlaskForm):
+    """Форма для загрузки одного или нескольких файлов на сервер."""
+
     files = MultipleFileField(
         'Выберите файлы для загрузки',
         validators=(DataRequired(message='Надо выбрать хотя бы один файл'),),
