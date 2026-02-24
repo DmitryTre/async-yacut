@@ -1,4 +1,3 @@
-
 from dotenv import load_dotenv
 
 from flask import Flask
@@ -15,4 +14,4 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-from . import constants, error_handlers, models, views, api_views, yandex_disk
+from . import api_views, constants, error_handlers, models, views, yandex_disk

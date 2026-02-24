@@ -45,7 +45,7 @@ class URLMap(db.Model):
         return not URLMap.query.filter_by(short=short).first()
 
     @staticmethod
-    def validate_short(short: str) -> None:
+    def validate_short(short):
         """Валидирует формат короткого ID."""
         if len(short) > SHORT_LEN:
             raise InvalidAPIUsage(ERROR_INVALID_SHORT_ID)
@@ -53,7 +53,7 @@ class URLMap(db.Model):
             raise InvalidAPIUsage(ERROR_INVALID_SHORT_ID)
 
     @staticmethod
-    def get_unique_short() -> str:
+    def get_unique_short():
         """Генерирует уникальный короткий ID для ссылки."""
         for _ in range(MAX_GENERATION_ATTEMPTS):
             short = ''.join(random.choices(VALID_CHARS, k=CUSTOM_SHORT))
@@ -66,7 +66,7 @@ class URLMap(db.Model):
         )
 
     @staticmethod
-    def create_from_api_data(data: dict) -> 'URLMap':
+    def create_from_api_data(data):
         """Создаёт объект URLMap из данных API-запроса."""
         if data is None or not data:
             raise InvalidAPIUsage(ERROR_MISSING_REQUEST_BODY)
@@ -91,7 +91,7 @@ class URLMap(db.Model):
         return link
 
     @staticmethod
-    def create(original_link: str, custom_id: str = '') -> 'URLMap':
+    def create(original_link, custom_id):
         """Создаёт и сохраняет в БД запись URLMap."""
         if custom_id:
             URLMap.is_reserved(custom_id)
@@ -110,19 +110,19 @@ class URLMap(db.Model):
         return link
 
     @classmethod
-    def get_by_short(cls, short: str) -> 'URLMap | None':
+    def get_by_short(cls, short):
         """Находит запись по короткой ссылке."""
         cleaned_short = short.rstrip('/')
         return cls.query.filter_by(short=cleaned_short).first()
 
-    def get_short_url(self) -> str:
+    def get_short_url(self):
         """Рассчитывает полный URL короткой ссылки (обычный метод)."""
         return url_for(
             'redirect_to_url', short=self.short, _external=True
         )
 
     @classmethod
-    def get_original_url(cls, short: str) -> str | None:
+    def get_original_url(cls, short):
         """Получает оригинальный URL по короткой ссылке."""
         url_map = cls.get_by_short(short)
         if url_map:
@@ -130,7 +130,7 @@ class URLMap(db.Model):
         return None
 
     @classmethod
-    async def create_with_file_link(cls, original_url: str) -> dict:
+    async def create_with_file_link(cls, original_url):
         """Создаёт запись URLMap и возвращает данные для отображения."""
         short_link = cls.get_unique_short_id()
         display_link = url_for(
