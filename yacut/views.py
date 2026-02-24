@@ -1,6 +1,5 @@
-import os
 from http import HTTPStatus
-from flask import abort, flash, redirect, render_template, request, url_for
+from flask import abort, redirect, render_template
 
 from yacut import app
 from yacut.forms import FileUploadForm, HeadURLForm
@@ -42,7 +41,15 @@ async def upload_files():
     return render_template(
         'upload_files.html',
         form=form,
-        uploaded_files=results
+        uploaded_files=[
+            {
+                'filename': item['filename'],
+                'short': URLMap.create(
+                    original_link=item['download_link']
+                ).get_short_url()
+            }
+            for item in results
+        ]
     ), HTTP_200_OK
 
 

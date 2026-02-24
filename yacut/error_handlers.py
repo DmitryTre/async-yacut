@@ -48,6 +48,6 @@ def page_not_found(error):
 
 @app.errorhandler(HTTP_500_INTERNAL_SERVER_ERROR)
 def internal_error(error):
-    """Обрабатывает ошибки 500 Internal Server Error"""
+    """Обрабатывает ошибки 500 Internal Server Error."""
     db.session.rollback()
     return render_template('500.html'), HTTP_500_INTERNAL_SERVER_ERROR

@@ -26,7 +26,8 @@ class YandexDiskUploader:
 
     async def get_upload_link(self, filename):
         """Получает URL для загрузки файла на Яндекс Диск."""
-        params = {'path': f'/ya_cut/{filename}', 'overwrite': 'true'}
+        params = {'path': f'{filename}', 'overwrite': 'true'}        
+        print(f"Path: {params}")
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.get(
                 f'{self.base_url}/upload',
@@ -38,7 +39,7 @@ class YandexDiskUploader:
                         status_code=resp.status
                     )
                 resp_json = await resp.json()
-               # print('Ответ API:', resp_json)
+                print('Ответ API:', resp_json)
                 if 'href' not in resp_json:
                     raise KeyError(
                         f'Ключ "href" отсутствует. Полный ответ: {resp_json}'
@@ -49,15 +50,17 @@ class YandexDiskUploader:
         """Загружает файл на Яндекс Диск по предоставленному URL."""
         async with aiohttp.ClientSession() as session:
             async with session.put(upload_url, data=file_content) as response:
+                print(f"Статус загрузки файла: {response.status}")
                 response.raise_for_status()
 
     async def get_download_link(self, path):
         """Получает публичную ссылку для скачивания файла с Яндекс Диска."""
-        async with aiohttp.ClientSession(headers=self.HEADERS) as session:
+        async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.get(
                 url=DOWNLOAD_LINK_URL,
                 params={'path': path}
             ) as response:
+                print(f"Статус запроса публичной ссылки: {response.status}")
                 response.raise_for_status()
 
                 if response.status == HTTPStatus.NO_CONTENT:
@@ -74,16 +77,19 @@ class YandexDiskUploader:
 
     async def upload_file_to_ya_disk(self, file):
         """Загружает файл на Яндекс Диск и возвращает публичную ссылку."""
-        path = f'{YA_CUT_PATH_PREFIX}{file}'
+        path = f'/ya_cut/{file.filename}'
+        print(f"Обработка файла: {file.filename}, путь на Диске: {path}")
         file_data = file.read()
         await self.upload_file(await self.get_upload_link(path), file_data)
         return await self.get_download_link(path)
 
     async def upload_files(self, files):
         """Асинхронная загрузка файлов."""
+        print(f"Начинаем загрузку {len(files)} файлов...")
         return [
-            await self.upload_file_to_ya_disk(
-                file
-            )
+            {
+                'filename': file.filename,
+                'download_link': await self.upload_file_to_ya_disk(file)
+            }
             for file in files
         ]
