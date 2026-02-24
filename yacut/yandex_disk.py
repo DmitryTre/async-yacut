@@ -1,18 +1,17 @@
 import aiohttp
 from http import HTTPStatus
-from settings import Config
 
 from .error_handlers import InvalidAPIUsage
-from .constants import YA_CUT_PATH_PREFIX
-
-API_HOST = 'https://cloud-api.yandex.net/'
-API_VERSION = 'v1'
-REQUEST_UPLOAD_URL = f'{API_HOST}{API_VERSION}/disk/resources/upload'
-DOWNLOAD_LINK_URL = f'{API_HOST}{API_VERSION}/disk/resources/download'
-HEADERS = {
-    'Accept': 'application/json',
-    'Authorization': f'OAuth {Config.DISK_TOKEN}'
-}
+from .constants import (
+    API_HOST,
+    API_VERSION,
+    DOWNLOAD_LINK_URL,
+    ERROR_DOWNLOAD_LINK,
+    REQUEST_UPLOAD_URL,
+    HEADERS,
+    HREF_KEY_ERROR,
+    YA_CUT_PATH_PREFIX
+)
 
 
 class YandexDiskUploader:
@@ -26,31 +25,26 @@ class YandexDiskUploader:
 
     async def get_upload_link(self, filename):
         """Получает URL для загрузки файла на Яндекс Диск."""
-        params = {'path': f'{filename}', 'overwrite': 'true'}        
-        print(f"Path: {params}")
+        params = {'path': f'{filename}', 'overwrite': 'true'}
         async with aiohttp.ClientSession(headers=self.headers) as session:
             async with session.get(
-                f'{self.base_url}/upload',
+                REQUEST_UPLOAD_URL,
                 params=params
             ) as resp:
                 if resp.status != HTTPStatus.OK:
                     raise InvalidAPIUsage(
-                        message=f'Ошибка {resp.status} при получении ссылки для загрузки: {await resp.text()}',
+                        message=ERROR_DOWNLOAD_LINK,
                         status_code=resp.status
                     )
                 resp_json = await resp.json()
-                print('Ответ API:', resp_json)
                 if 'href' not in resp_json:
-                    raise KeyError(
-                        f'Ключ "href" отсутствует. Полный ответ: {resp_json}'
-                    )
+                    raise KeyError(HREF_KEY_ERROR)
                 return resp_json['href']
 
     async def upload_file(self, upload_url, file_content):
         """Загружает файл на Яндекс Диск по предоставленному URL."""
         async with aiohttp.ClientSession() as session:
             async with session.put(upload_url, data=file_content) as response:
-                print(f"Статус загрузки файла: {response.status}")
                 response.raise_for_status()
 
     async def get_download_link(self, path):
@@ -60,7 +54,6 @@ class YandexDiskUploader:
                 url=DOWNLOAD_LINK_URL,
                 params={'path': path}
             ) as response:
-                print(f"Статус запроса публичной ссылки: {response.status}")
                 response.raise_for_status()
 
                 if response.status == HTTPStatus.NO_CONTENT:
@@ -69,23 +62,18 @@ class YandexDiskUploader:
                 response_json = await response.json()
                 href = response_json.get('href')
                 if not href:
-                    raise ValueError(
-                        f'В ответе отсутствует ключ "href". '
-                        f'Полный ответ: {response_json}'
-                    )
+                    raise ValueError(HREF_KEY_ERROR)
                 return href
 
     async def upload_file_to_ya_disk(self, file):
         """Загружает файл на Яндекс Диск и возвращает публичную ссылку."""
-        path = f'/ya_cut/{file.filename}'
-        print(f"Обработка файла: {file.filename}, путь на Диске: {path}")
+        path = f'{YA_CUT_PATH_PREFIX}{file.filename}'
         file_data = file.read()
         await self.upload_file(await self.get_upload_link(path), file_data)
         return await self.get_download_link(path)
 
     async def upload_files(self, files):
         """Асинхронная загрузка файлов."""
-        print(f"Начинаем загрузку {len(files)} файлов...")
         return [
             {
                 'filename': file.filename,

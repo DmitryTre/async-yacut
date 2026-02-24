@@ -89,7 +89,7 @@ class URLMap(db.Model):
         link.original = data['url']
         link.short = custom_id
         return link
-    
+
     @staticmethod
     def create(original_link: str, custom_id: str = '') -> 'URLMap':
         """Создаёт и сохраняет в БД запись URLMap."""
