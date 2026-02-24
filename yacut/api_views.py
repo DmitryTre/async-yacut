@@ -9,12 +9,12 @@ from .constants import HTTP_200_OK, HTTP_201_CREATED
 def create_short_link():
     """Создаёт короткую ссылку из переданного URL через API."""
     data = request.get_json()
-    link = URLMap.create_from_api_data(data).save()
+    link = URLMap.create_from_api_data(data)
     return jsonify(link.to_dict()), HTTP_201_CREATED
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'], strict_slashes=False)
 def get_original_url(short):
     """Возвращает оригинальный URL по короткой ссылке через API."""
-    link = URLMap.get_byshort(short)
+    link = URLMap.get_by_short(short)
     return jsonify({'url': link.original}), HTTP_200_OK
