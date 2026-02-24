@@ -11,6 +11,24 @@
     <title>{% block title %}YaCut — укоротитель ссылок{% endblock title %}</title>
 </head>
 <body>
+        <!-- Блок для flash-сообщений -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="row mb-3">
+          <div class="col-sm"></div>
+          <div class="col-sm">
+            {% for message in messages %}
+              <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          </div>
+          <div class="col-sm"></div>
+        </div>
+      {% endif %}
+    {% endwith %}
+    
     {% include "header.html" %}
         {% block content %}
         {% endblock content %}

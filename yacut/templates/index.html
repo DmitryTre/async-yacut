@@ -9,42 +9,26 @@
       Создайте короткую ссылку автоматически или предложите свой вариант
     </p>
 
-    <!-- Блок для flash-сообщений -->
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="row mb-3">
-          <div class="col-sm"></div>
-          <div class="col-sm">
-            {% for message in messages %}
-              <div class="alert alert-info alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
-            {% endfor %}
-          </div>
-          <div class="col-sm"></div>
-        </div>
-      {% endif %}
-    {% endwith %}
-
     <div class="container">
       <div class="row my-3">
         <div class="col-sm"></div>
         <div class="col-sm">
           <form method="POST" novalidate>
             {{ form.csrf_token }}
+
             {{ form.original_link(class="form-control form-control-lg py-2 mb-3", placeholder=form.original_link.label.text) }}
-            <p>
-              {% if form.original_link.errors %}
-                {% for error in form.original_link.errors %}<span style="color: red">{{ error }}</span>{% endfor %}
-              {% endif %}
+            <p>              
+              {% for error in form.original_link.errors %}
+                <span style="color: red">{{ error }}</span>
+              {% endfor %}              
             </p>
             {{ form.custom_id(class="form-control form-control-lg py-2 mb-3", placeholder=form.custom_id.label.text) }}
-            <p>
-              {% if form.custom_id.errors %}
-                {% for error in form.custom_id.errors %}<span style="color: red">{{ error }}</span>{% endfor %}
-              {% endif %}
+            <p>              
+              {% for error in form.custom_id.errors %}
+                <span style="color: red">{{ error }}</span>
+              {% endfor %}              
             </p>
+
             {{ form.submit(class="btn btn-primary") }}
           </form>
         </div>
@@ -53,18 +37,16 @@
     </div>
 
     <!-- Блок отображения короткой ссылки -->
-    {% if short_link %}
+    {% if short %}
+      <div class="alert alert-success mt-3" role="alert">
+        Короткая ссылка создана!
+      </div>
       <div class="container mt-4">
         <div class="row">
           <div class="col-sm"></div>
           <div class="col-sm text-center">
             <h5>Ваша короткая ссылка:</h5>
-            <p>
-              <a href="{{ short_link.rstrip('/') }}" target="_blank" class="fw-bold">{{ short_link.rstrip('/') }}</a>
-            </p>
-            <p class="text-muted">
-              Короткий идентификатор: <code>{{ short_id }}</code>
-            </p>
+            <a href="{{ short }}" target="_blank" class="fw-bold">{{ short }}</a>
           </div>
           <div class="col-sm"></div>
         </div>

@@ -15,7 +15,7 @@ sys.path.append(str(BASE_DIR))
 
 _user_environment = os.environ.copy()
 _tmp_db_uri = 'sqlite:///:memory:'
-os.environ['DATABASE_URI'] = _tmp_db_uri
+os.environ['DATABASE_YaCUT'] = _tmp_db_uri
 os.environ['DISK_TOKEN'] = 'y0_nbfoiu3445tno35_fd09v854bn2_cs0e8hrb4k'
 
 PY_URL = 'https://www.python.org'
@@ -44,7 +44,7 @@ except ImportError as exc:
 assert app.config['SQLALCHEMY_DATABASE_URI'] == _tmp_db_uri, (
     'Проверьте, что конфигурационному ключу `SQLALCHEMY_DATABASE_URI` '
     'присвоено значение с настройками для подключения базы данных с '
-    'использованием переменной окружения `DATABASE_URI`.'
+    'использованием переменной окружения `DATABASE_YaCUT`.'
 )
 
 

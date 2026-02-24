@@ -15,4 +15,4 @@ db = SQLAlchemy(app)
 
 migrate = Migrate(app, db)
 
-from . import error_handlers, models, views, api_views, yandex_disk
+from . import constants, error_handlers, models, views, api_views, yandex_disk

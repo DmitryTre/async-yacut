@@ -39,22 +39,22 @@
 
     <!-- Список загруженных файлов -->
     {% if uploaded_files %}
-    <div class="container mt-4">
+      <div class="container mt-4">
         <h3>Загруженные файлы:</h3>
-        <ul class="list-group">
+          <ul class="list-group">
             {% for file in uploaded_files %}
-           <li class="list-group-item">
-            Файл: {{ file.filename }} &nbsp;
-           </li>
-           <li>
-            Короткая ссылка:
-            <a href="{{ file.short_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                {{ file.short_link }}
-            </a>
-        </li>
+              <li class="list-group-item">
+                Файл: {{ file.filename }} &nbsp;
+              </li>
+              <li>
+                Короткая ссылка:
+                  <a href="{{ file.short_link }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                    {{ file.short_link }}
+                  </a>
+              </li>
             {% endfor %}
-        </ul>
-    </div>
+          </ul>
+      </div>
     {% endif %}
 
 {% endblock %}
