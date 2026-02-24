@@ -88,7 +88,7 @@ class URLMap(db.Model):
         link = URLMap()
         link.original = data['url']
         link.short = custom_id
-        
+
         db.session.add(link)
         db.session.commit()
         return link
