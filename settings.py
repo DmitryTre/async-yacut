@@ -3,7 +3,7 @@ import os
 
 class Config(object):
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URI',
+        'DATABASE_YaCUT',
         default='sqlite:///yacut_v1_dev.db'
     )
     SECRET_KEY = os.getenv('SECRET_KEY', default='some_secret_key')

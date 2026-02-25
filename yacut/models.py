@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 import random
 
 from yacut import db
-from flask import url_for
+from flask import flash, url_for
+
 from .constants import (
     CUSTOM_SHORT,
     MAX_GENERATION_ATTEMPTS,
@@ -10,12 +11,11 @@ from .constants import (
     RESERVED_IDS,
     SHORT_LEN,
     ORIGINAL_LENGHT,
-    ERROR_RESERVED_SHORT_ID,
     ERROR_INVALID_SHORT_ID,
     ERROR_GENERATION_FAILED,
     ERROR_MISSING_REQUEST_BODY,
     ERROR_MISSING_URL_FIELD,
-    ERROR_DUPLICATE_SHORT_ID
+    ERROR_DOUBLE_SHORT_ID
 )
 from .error_handlers import InvalidAPIUsage
 
@@ -36,7 +36,7 @@ class URLMap(db.Model):
     def is_reserved(short: str) -> bool:
         """Проверить, является ли ID зарезервированным."""
         if short in RESERVED_IDS:
-            raise InvalidAPIUsage(ERROR_RESERVED_SHORT_ID.format(short=short))
+            raise InvalidAPIUsage(ERROR_DOUBLE_SHORT_ID.format(short=short))
         return False
 
     @staticmethod
@@ -78,9 +78,10 @@ class URLMap(db.Model):
 
         if custom_id:
             URLMap.validate_short(custom_id)
+            URLMap.is_reserved(custom_id)
             if not URLMap.is_unique(custom_id):
                 raise InvalidAPIUsage(
-                    ERROR_DUPLICATE_SHORT_ID.format(short=custom_id)
+                    ERROR_DOUBLE_SHORT_ID.format(short=custom_id)
                 )
         else:
             custom_id = URLMap.get_unique_short()
@@ -98,11 +99,12 @@ class URLMap(db.Model):
         """Создаёт и сохраняет в БД запись URLMap."""
         if custom_id:
             URLMap.is_reserved(custom_id)
+            flash('Предложенный вариант короткой ссылки уже существует.')
             URLMap.validate_short(custom_id)
 
             if not URLMap.is_unique(custom_id):
                 raise InvalidAPIUsage(
-                    ERROR_DUPLICATE_SHORT_ID.format(short=custom_id)
+                    ERROR_DOUBLE_SHORT_ID.format(short=custom_id)
                 )
         else:
             custom_id = URLMap.get_unique_short()

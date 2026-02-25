@@ -1,7 +1,8 @@
 from http import HTTPStatus
-from flask import abort, redirect, render_template
+from flask import abort, flash, redirect, render_template
 
 from yacut import app
+from .error_handlers import InvalidAPIUsage
 from yacut.forms import FileUploadForm, HeadURLForm
 from yacut.models import URLMap
 from yacut.yandex_disk import YandexDiskUploader
@@ -18,15 +19,19 @@ def index_view():
     form = HeadURLForm()
     if not form.validate_on_submit():
         return render_template('index.html', form=form)
-    short = URLMap.create(
-        form.original_link.data,
-        form.custom_id.data
-    ).get_short_url()
-    return render_template(
-        'index.html',
-        form=form,
-        short=short
-    )
+    try:
+        short = URLMap.create(
+            form.original_link.data,
+            form.custom_id.data
+        ).get_short_url()
+        return render_template(
+            'index.html',
+            form=form,
+            short=short
+        )
+    except InvalidAPIUsage as e:
+        flash(str(e), 'error')
+        return render_template('index.html', form=form)
 
 
 @app.route('/files/', methods=['GET', 'POST'], strict_slashes=False)
@@ -45,7 +50,8 @@ async def upload_files():
             {
                 'filename': item['filename'],
                 'short': URLMap.create(
-                    original_link=item['download_link']
+                    original_link=item['download_link'],
+                    custom_id=None
                 ).get_short_url()
             }
             for item in results
@@ -53,7 +59,7 @@ async def upload_files():
     ), HTTP_200_OK
 
 
-@app.route('/<short>/', endpoint='redirect_to_url', strict_slashes=False)
+@app.route('/<short>', endpoint='redirect_to_url', strict_slashes=False)
 def redirect_to_url(short=None):
     """Перенаправляет по короткой ссылке на оригинальный URL."""
     original = URLMap.get_original_url(short)

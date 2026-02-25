@@ -16,15 +16,15 @@ YA_CUT_PATH_PREFIX = '/ya_cut/'
 REDIRECT_VIEW_NAME = 'redirect_to_url'
 
 # === КОНСТАНТЫ СООБЩЕНИЙ ОБ ОШИБКАХ (уровень модуля) ===
-ERROR_MISSING_REQUEST_BODY = 'Тело запроса пустое'
+ERROR_MISSING_REQUEST_BODY = 'Отсутствует тело запроса'
 ERROR_INVALID_URL = 'Недопустимый URL: {url}'
-ERROR_DUPLICATE_SHORT_ID = 'Короткая ссылка "{short}" занята'
+ERROR_DOUBLE_SHORT_ID = 'Предложенный вариант короткой ссылки уже существует.'
 ERROR_VALIDATION_FAILED = 'Ошибка валидации: {details}'
 ERROR_RESERVED_SHORT_ID = 'ID "{short}" зарезервирован'
-ERROR_MISSING_URL_FIELD = 'Поле "url" отсутствует'
-ERROR_INVALID_SHORT_ID = 'Недопустимый ID. Только a-z, 0-9, до 16 симв.'
+ERROR_MISSING_URL_FIELD = '"url" является обязательным полем!'
+ERROR_INVALID_SHORT_ID = 'Указано недопустимое имя для короткой ссылки'
 ERROR_GENERATION_FAILED = 'Не удалось сгенерировать после {attempts} попыток'
-ERROR_SHORT_ID_NOT_FOUND = 'Короткая ссылка не найдена'
+ERROR_SHORT_ID_NOT_FOUND = 'Указанный id не найден'
 ERROR_DOWNLOAD_LINK = 'Ошибка получения ссылки для загрузки'
 
 # Сообщения для валидации форм
