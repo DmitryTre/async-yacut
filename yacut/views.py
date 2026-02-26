@@ -3,10 +3,10 @@ from flask import abort, flash, redirect, render_template
 import yaml
 
 from yacut import app
+from yacut.constants import REDIRECT_ENDPOINT
 from yacut.forms import FileUploadForm, HeadURLForm
 from yacut.models import URLMap
 from yacut.yandex_disk import YandexDiskUploader
-from .constants import REDIRECT_ENDPOINT
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -37,20 +37,25 @@ async def upload_files():
         return render_template('upload_files.html', form=form)
     files = form.files.data
     uploader = YandexDiskUploader()
-    urls_set = await uploader.upload_files(files)
+
+    file_names = [file.filename for file in files]
     try:
+        urls_set = await uploader.upload_files(files)
+        uploaded_files = []
+        for filename, direct_url in zip(file_names, urls_set):
+            short_url = URLMap.create(
+                url=direct_url,
+                short=None
+            ).get_short_url()
+            uploaded_files.append({
+                'name': filename,
+                'short': short_url
+            })
+
         return render_template(
             'upload_files.html',
             form=form,
-            uploaded_files=[
-                {
-                    'short': URLMap.create(
-                        url=item,
-                        short=None
-                    ).get_short_url()
-                }
-                for item in urls_set
-            ]
+            uploaded_files=uploaded_files
         )
     except (RuntimeError, ValueError) as e:
         flash(str(e), 'error')

@@ -3,8 +3,8 @@ import os
 
 class Config(object):
     SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URI',
-        default='sqlite:///yacut_v1_dev.db'
+        'DATABASE_YaCut',
+        default='sqlite:///yacut_v.db'
     )
     SECRET_KEY = os.getenv('SECRET_KEY', default='some_secret_key')
     DISK_TOKEN = os.getenv('DISK_TOKEN')

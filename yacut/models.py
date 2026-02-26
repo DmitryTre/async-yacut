@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from datetime import datetime, timezone
 import random
 
@@ -53,16 +54,17 @@ class URLMap(db.Model):
             raise ValueError(TOO_LONG_URL)
 
         if short:
-            if short == RESERVED_IDS or URLMap.get(short):
+            if short in RESERVED_IDS or URLMap.get(short):
                 raise ValueError(ERROR_DOUBLE_SHORT_ID)
             if len(short) > SHORT_LEN:
+                raise ValueError(INVALID_SHORT)
+            if not all(char in VALID_CHARS for char in short):
                 raise ValueError(INVALID_SHORT)
         else:
             short = URLMap.get_unique_short()
 
         url_map = URLMap(original=url, short=short)
         db.session.add(url_map)
-        db.session.commit()
         return url_map
 
     @staticmethod

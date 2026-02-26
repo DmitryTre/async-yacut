@@ -21,8 +21,8 @@ def create_short_link():
     if 'url' not in data:
         raise InvalidAPIUsage(ERROR_MISSING_URL_FIELD)
     try:
-        url_map = URLMap.create_from_api_data(
-            original_url=data['url'],
+        url_map = URLMap.create(
+            url=data['url'],
             short=data.get('custom_id'),
             validate=True
         )
@@ -31,15 +31,15 @@ def create_short_link():
                 'url': data['url'],
                 'short_link': url_map.get_short_url()
             }
-        ), HTTPStatus.Created
+        ), HTTPStatus.CREATED
     except ValueError as e:
-        InvalidAPIUsage(e)
+        raise InvalidAPIUsage(str(e))
 
 
 @app.route('/api/id/<short>/', methods=['GET'])
 def get_original_url(short):
     """Возвращает оригинальный URL по короткой ссылке через API."""
-    if not (url_map := URLMap.get_by_short(short)):
+    if not (url_map := URLMap.get(short)):
         raise InvalidAPIUsage(ERROR_SHORT_ID_NOT_FOUND, HTTPStatus.NOT_FOUND)
 
     return jsonify({'url': url_map.original}), HTTPStatus.OK
