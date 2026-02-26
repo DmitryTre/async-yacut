@@ -1,6 +1,7 @@
 from http import HTTPStatus
-from flask import abort, flash, redirect, render_template
 import yaml
+
+from flask import abort, flash, redirect, render_template
 
 from yacut import app
 from yacut.constants import REDIRECT_ENDPOINT

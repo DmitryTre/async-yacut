@@ -1,13 +1,13 @@
 import aiohttp
 
 from http import HTTPStatus
-from settings import Config
 from .constants import (
     DOWNLOAD_LINK_URL,
-    REQUEST_UPLOAD_URL,
     HEADERS,
     NO_CONTENT,
+    REQUEST_UPLOAD_URL,
 )
+from settings import Config
 
 
 class YandexDiskUploader:
