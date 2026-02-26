@@ -1,17 +1,18 @@
+
 from datetime import datetime, timezone
 import random
 
-from yacut import db
 from flask import url_for
 
-from .constants import (
-    SHORT,
+from yacut import db
+from yacut.constants import (
     MAX_GENERATION_ATTEMPTS,
-    VALID_CHARS,
-    RESERVED_IDS,
-    SHORT_LEN,
     ORIGINAL_LENGTH,
-    REDIRECT_ENDPOINT
+    REDIRECT_ENDPOINT,
+    RESERVED_IDS,
+    SHORT,
+    SHORT_LEN,
+    VALID_CHARS,
 )
 
 TOO_LONG_URL = (
