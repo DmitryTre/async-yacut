@@ -8,7 +8,6 @@ from .constants import (
     ORIGINAL_LENGTH,
     REGEX,
     SHORT_LEN,
-    VALID_CHARS
 )
 
 # Сообщения для валидации форм

@@ -1,9 +1,8 @@
-from http import HTTPStatus
 from datetime import datetime, timezone
 import random
 
 from yacut import db
-from flask import flash, url_for
+from flask import url_for
 
 from .constants import (
     SHORT,
@@ -11,14 +10,13 @@ from .constants import (
     VALID_CHARS,
     RESERVED_IDS,
     SHORT_LEN,
-    LINKS_COUNT ,
     ORIGINAL_LENGTH,
     REDIRECT_ENDPOINT
 )
 
 TOO_LONG_URL = (
     'Длина URL не должна превышать'
-    f' {ORIGINAL_LENGTH} символов'
+    f'{ORIGINAL_LENGTH} символов'
 )
 ERROR_DOUBLE_SHORT_ID = 'Предложенный вариант короткой ссылки уже существует.'
 ERROR_GENERATION_FAILED = 'Сбой генерации после {MAX_GENERATION_ATTEMPTS} раз'
