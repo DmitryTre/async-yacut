@@ -1,8 +1,6 @@
 from http import HTTPStatus
-
 from flask import jsonify, request
 
-from . import app
 from .constants import (
     ERROR_MISSING_REQUEST_BODY,
     ERROR_MISSING_URL_FIELD,
@@ -10,7 +8,7 @@ from .constants import (
 )
 from .error_handlers import InvalidAPIUsage
 from .models import URLMap
-
+from . import app
 
 @app.route('/api/id/', methods=['POST'])
 def create_short_link():
