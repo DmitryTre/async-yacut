@@ -75,3 +75,18 @@ class URLMap(db.Model):
         return url_for(
             REDIRECT_ENDPOINT, short=self.short, _external=True
         )
+
+    @staticmethod
+    def create_batch(urls, shorts=None):
+        """Создаёт пакет записей URLMap с одним коммитом в конце."""
+        url_maps = []
+
+        if shorts is None:
+            shorts = [None] * len(urls)
+
+        for url, short in zip(urls, shorts):
+            url_map = URLMap.create(url, short)
+            url_maps.append(url_map)
+
+        db.session.commit()
+        return url_maps

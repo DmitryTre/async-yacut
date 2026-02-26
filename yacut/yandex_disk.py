@@ -16,13 +16,14 @@ class YandexDiskUploader:
     async def get_upload_link(self, filename):
         """Получает URL для загрузки файла на Яндекс Диск."""
         params = {'path': filename, 'overwrite': 'true'}
-        async with aiohttp.ClientSession(headers=self.headers) as session:
+        async with aiohttp.ClientSession(headers=HEADERS) as session:
             async with session.get(
                 REQUEST_UPLOAD_URL,
                 params=params
             ) as resp:
                 resp.raise_for_status()
-                return await resp.json()['href']
+                json_data = await resp.json()
+                return json_data['href']
 
     async def upload_file(self, upload_url, file_content):
         """Загружает файл на Яндекс Диск по предоставленному URL."""
@@ -42,7 +43,7 @@ class YandexDiskUploader:
                 if response.status == HTTPStatus.NO_CONTENT:
                     raise ValueError(NO_CONTENT)
 
-                return await response.json().get('href')
+                return (await response.json()).get('href')
 
     async def upload_file_to_ya_disk(self, file):
         """Загружает файл на Яндекс Диск и возвращает публичную ссылку."""

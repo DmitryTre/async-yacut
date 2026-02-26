@@ -45,7 +45,8 @@ async def upload_files():
             uploaded_files=[
                 {
                     'short': URLMap.create(
-                        original_link=item['download_link'],
+                        url=item,
+                        short=None
                     ).get_short_url()
                 }
                 for item in urls_set
