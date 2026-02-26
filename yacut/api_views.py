@@ -10,6 +10,7 @@ from .error_handlers import InvalidAPIUsage
 from .models import URLMap
 from . import app
 
+
 @app.route('/api/id/', methods=['POST'])
 def create_short_link():
     """Создаёт короткую ссылку из переданного URL через API."""
