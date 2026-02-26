@@ -12,7 +12,7 @@
 </head>
 <body>
 <!-- Блок для flash-сообщений -->
-{% with messages = get_flashed_messages(with_categories=true) %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
     <div class="row mb-3">
       <div class="col-sm"></div>

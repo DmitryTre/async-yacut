@@ -1,16 +1,12 @@
 from http import HTTPStatus
 from flask import abort, flash, redirect, render_template
+import yaml
 
 from yacut import app
-from .error_handlers import InvalidAPIUsage
 from yacut.forms import FileUploadForm, HeadURLForm
 from yacut.models import URLMap
 from yacut.yandex_disk import YandexDiskUploader
-from .constants import (
-    DISK_TOKEN,
-    HTTP_200_OK,
-    HTTP_404_NOT_FOUND
-)
+from .constants import REDIRECT_ENDPOINT
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -20,16 +16,15 @@ def index_view():
     if not form.validate_on_submit():
         return render_template('index.html', form=form)
     try:
-        short = URLMap.create(
-            form.original_link.data,
-            form.custom_id.data
-        ).get_short_url()
         return render_template(
             'index.html',
             form=form,
-            short=short
+            short=URLMap.create(
+                form.original_link.data,
+                form.custom_id.data
+            ).get_short_url()
         )
-    except InvalidAPIUsage as e:
+    except (RuntimeError, ValueError) as e:
         flash(str(e), 'error')
         return render_template('index.html', form=form)
 
@@ -41,34 +36,41 @@ async def upload_files():
     if not form.validate_on_submit():
         return render_template('upload_files.html', form=form)
     files = form.files.data
-    uploader = YandexDiskUploader(token=DISK_TOKEN)
-    results = await uploader.upload_files(files)
-    return render_template(
-        'upload_files.html',
-        form=form,
-        uploaded_files=[
-            {
-                'filename': item['filename'],
-                'short': URLMap.create(
-                    original_link=item['download_link'],
-                    custom_id=None
-                ).get_short_url()
-            }
-            for item in results
-        ]
-    ), HTTP_200_OK
+    uploader = YandexDiskUploader()
+    urls_set = await uploader.upload_files(files)
+    try:
+        return render_template(
+            'upload_files.html',
+            form=form,
+            uploaded_files=[
+                {
+                    'short': URLMap.create(
+                        original_link=item['download_link'],
+                    ).get_short_url()
+                }
+                for item in urls_set
+            ]
+        )
+    except (RuntimeError, ValueError) as e:
+        flash(str(e), 'error')
+        return render_template('upload_files.html', form=form)
 
 
-@app.route('/<short>', endpoint='redirect_to_url', strict_slashes=False)
-def redirect_to_url(short=None):
+@app.route('/<short>', endpoint=REDIRECT_ENDPOINT, strict_slashes=False)
+def redirect_to_url(short):
     """Перенаправляет по короткой ссылке на оригинальный URL."""
-    original = URLMap.get_original_url(short)
-    if original:
-        return redirect(original, HTTPStatus.FOUND)
-    return abort(HTTP_404_NOT_FOUND)
+    if (url_map := URLMap.get(short)):
+        return redirect(url_map.original, HTTPStatus.FOUND)
+    return abort(HTTPStatus.NOT_FOUND)
 
 
 @app.route('/help')
 def help_page():
     """Маршрут для отображения страницы справки."""
-    return render_template('help.html')
+    with open('openapi.yml', 'r', encoding='utf-8') as f:
+        openapi_data = yaml.safe_load(f)
+    return render_template('help.html', openapi_content=yaml.dump(
+        openapi_data,
+        default_flow_style=False,
+        allow_unicode=True)
+    )

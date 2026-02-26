@@ -5,27 +5,31 @@ from yacut import db
 from flask import flash, url_for
 
 from .constants import (
-    CUSTOM_SHORT,
+    SHORT,
     MAX_GENERATION_ATTEMPTS,
     VALID_CHARS,
     RESERVED_IDS,
     SHORT_LEN,
-    ORIGINAL_LENGHT,
-    ERROR_INVALID_SHORT_ID,
-    ERROR_GENERATION_FAILED,
-    ERROR_MISSING_REQUEST_BODY,
-    ERROR_MISSING_URL_FIELD,
-    ERROR_DOUBLE_SHORT_ID
+    LINKS_COUNT ,
+    ORIGINAL_LENGTH,
+    REDIRECT_ENDPOINT
 )
-from .error_handlers import InvalidAPIUsage
+
+TOO_LONG_URL = (
+    'Длина URL не должна превышать'
+    f' {ORIGINAL_LENGTH} символов'
+)
+ERROR_DOUBLE_SHORT_ID = 'Предложенный вариант короткой ссылки уже существует.'
+ERROR_GENERATION_FAILED = 'Сбой генерации после {MAX_GENERATION_ATTEMPTS} раз'
+INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
 
 
 class URLMap(db.Model):
     """Модель хранения соответствий URL и коротких ссылок."""
 
     id = db.Column(db.Integer, primary_key=True)
-    original = db.Column(db.String(ORIGINAL_LENGHT))
-    short = db.Column(db.String(CUSTOM_SHORT), unique=True, index=True)
+    original = db.Column(db.String(ORIGINAL_LENGTH))
+    short = db.Column(db.String(SHORT), unique=True, index=True)
     timestamp = db.Column(
         db.DateTime,
         index=True,
@@ -33,122 +37,41 @@ class URLMap(db.Model):
     )
 
     @staticmethod
-    def is_reserved(short: str) -> bool:
-        """Проверить, является ли ID зарезервированным."""
-        if short in RESERVED_IDS:
-            raise InvalidAPIUsage(ERROR_DOUBLE_SHORT_ID.format(short=short))
-        return False
-
-    @staticmethod
-    def is_unique(short: str) -> bool:
-        """Проверить уникальность короткого ID в БД."""
-        return not URLMap.query.filter_by(short=short).first()
-
-    @staticmethod
-    def validate_short(short):
-        """Валидирует формат короткого ID."""
-        if len(short) > SHORT_LEN:
-            raise InvalidAPIUsage(ERROR_INVALID_SHORT_ID)
-        if not all(c in VALID_CHARS for c in short):
-            raise InvalidAPIUsage(ERROR_INVALID_SHORT_ID)
-
-    @staticmethod
     def get_unique_short():
         """Генерирует уникальный короткий ID для ссылки."""
         for _ in range(MAX_GENERATION_ATTEMPTS):
-            short = ''.join(random.choices(VALID_CHARS, k=CUSTOM_SHORT))
-            if URLMap.is_reserved(short):
-                continue
-            if URLMap.is_unique(short):
+            short = ''.join(random.choices(VALID_CHARS, k=SHORT))
+            if (short not in RESERVED_IDS and
+                    not URLMap.query.filter_by(short=short).first()):
                 return short
-        raise InvalidAPIUsage(
-            ERROR_GENERATION_FAILED.format(attempts=MAX_GENERATION_ATTEMPTS)
-        )
+        raise RuntimeError(ERROR_GENERATION_FAILED)
 
     @staticmethod
-    def create_from_api_data(data):
+    def create(url, short, validate=True):
         """Создаёт объект URLMap из данных API-запроса."""
-        if data is None or not data:
-            raise InvalidAPIUsage(ERROR_MISSING_REQUEST_BODY)
+        if len(url) > ORIGINAL_LENGTH:
+            raise ValueError(TOO_LONG_URL)
 
-        if 'url' not in data:
-            raise InvalidAPIUsage(ERROR_MISSING_URL_FIELD)
-
-        custom_id = data.get('custom_id', '').strip()
-
-        if custom_id:
-            URLMap.validate_short(custom_id)
-            URLMap.is_reserved(custom_id)
-            if not URLMap.is_unique(custom_id):
-                raise InvalidAPIUsage(
-                    ERROR_DOUBLE_SHORT_ID.format(short=custom_id)
-                )
+        if short:
+            if short == RESERVED_IDS or URLMap.get(short):
+                raise ValueError(ERROR_DOUBLE_SHORT_ID)
+            if len(short) > SHORT_LEN:
+                raise ValueError(INVALID_SHORT)
         else:
-            custom_id = URLMap.get_unique_short()
+            short = URLMap.get_unique_short()
 
-        link = URLMap()
-        link.original = data['url']
-        link.short = custom_id
-
-        db.session.add(link)
+        url_map = URLMap(original=url, short=short)
+        db.session.add(url_map)
         db.session.commit()
-        return link
+        return url_map
 
     @staticmethod
-    def create(original_link, custom_id):
-        """Создаёт и сохраняет в БД запись URLMap."""
-        if custom_id:
-            URLMap.is_reserved(custom_id)
-            flash('Предложенный вариант короткой ссылки уже существует.')
-            URLMap.validate_short(custom_id)
-
-            if not URLMap.is_unique(custom_id):
-                raise InvalidAPIUsage(
-                    ERROR_DOUBLE_SHORT_ID.format(short=custom_id)
-                )
-        else:
-            custom_id = URLMap.get_unique_short()
-
-        link = URLMap(original=original_link, short=custom_id)
-        db.session.add(link)
-        db.session.commit()
-        return link
-
-    @classmethod
-    def get_by_short(cls, short):
+    def get(short):
         """Находит запись по короткой ссылке."""
-        cleaned_short = short.rstrip('/')
-        return cls.query.filter_by(short=cleaned_short).first()
+        return URLMap.query.filter_by(short=short).first()
 
     def get_short_url(self):
         """Рассчитывает полный URL короткой ссылки (обычный метод)."""
         return url_for(
-            'redirect_to_url', short=self.short, _external=True
+            REDIRECT_ENDPOINT, short=self.short, _external=True
         )
-
-    @classmethod
-    def get_original_url(cls, short):
-        """Получает оригинальный URL по короткой ссылке."""
-        url_map = cls.get_by_short(short)
-        if url_map:
-            return url_map.original
-        return None
-
-    @classmethod
-    async def create_with_file_link(cls, original_url):
-        """Создаёт запись URLMap и возвращает данные для отображения."""
-        short_link = cls.get_unique_short_id()
-        display_link = url_for(
-            'redirect_to_url',
-            short_link=short_link,
-            _external=True
-        )
-
-        url_map = cls(original=original_url, short=short_link)
-        db.session.add(url_map)
-        db.session.commit()
-
-        return {
-            'short_link': display_link,
-            'original_url': original_url
-        }

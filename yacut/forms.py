@@ -1,23 +1,31 @@
+
 from flask_wtf import FlaskForm
 from flask_wtf.file import MultipleFileField
 from wtforms import StringField, SubmitField, URLField
-from wtforms.validators import DataRequired, Regexp, Length, Optional
+from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 from .constants import (
-    LABEL_CUSTOM_ID,
-    LABEL_ORIGINAL_LINK,
-    LABEL_SUBMIT_SHORTEN,
-    LABEL_FILES,
-    LABEL_SUBMIT_UPLOAD,
-    MSG_FIELD_REQUIRED,
-    MSG_INVALID_SHORT_ID_CHARS,
-    MSG_URL_TOO_LONG,
-    MSG_SHORT_ID_TOO_LONG,
-    MSG_NO_FILES_SELECTED,
-    ORIGINAL_LENGHT,
-    VALID_CHARS,
+    ORIGINAL_LENGTH,
+    REGEX,
     SHORT_LEN,
+    VALID_CHARS
 )
+
+# Сообщения для валидации форм
+FIELD_REQUIRED = 'Поле обязательно для заполнения'
+URL_TOO_LONG = 'Ссылка длиннее {ORIGINAL_LENGTH} символов'
+SHORT_ID_TOO_LONG = 'ID длиннее {SHORT_LEN} символов'
+NO_FILES_SELECTED = 'Выберите хотя бы один файл'
+INVALID_SHORT_ID_CHARS = 'Недопустимые символы в ID'
+
+# Подписи полей форм
+LABEL_ORIGINAL_LINK = 'Оригинальная ссылка'
+LABEL_CUSTOM_ID = 'Ваш вариант короткой ссылки'
+LABEL_FILES = 'Выберите файлы для загрузки'
+
+# Надписи кнопок
+LABEL_SUBMIT_SHORTEN = 'Создать'
+LABEL_SUBMIT_UPLOAD = 'Загрузить файлы'
 
 
 class HeadURLForm(FlaskForm):
@@ -26,10 +34,10 @@ class HeadURLForm(FlaskForm):
     original_link = URLField(
         LABEL_ORIGINAL_LINK,
         validators=(
-            DataRequired(message=MSG_FIELD_REQUIRED),
+            DataRequired(message=FIELD_REQUIRED),
             Length(
-                max=ORIGINAL_LENGHT,
-                message=MSG_URL_TOO_LONG.format(max_length=ORIGINAL_LENGHT)
+                max=ORIGINAL_LENGTH,
+                message=URL_TOO_LONG
             ),
         ),
     )
@@ -37,12 +45,12 @@ class HeadURLForm(FlaskForm):
         LABEL_CUSTOM_ID,
         validators=(
             Regexp(
-                regex=f'^[{VALID_CHARS}]*$',
-                message=MSG_INVALID_SHORT_ID_CHARS
+                regex=REGEX,
+                message=INVALID_SHORT_ID_CHARS
             ),
             Length(
                 max=SHORT_LEN,
-                message=MSG_SHORT_ID_TOO_LONG.format(max_length=SHORT_LEN)
+                message=SHORT_ID_TOO_LONG
             ),
             Optional()
         )
@@ -55,6 +63,6 @@ class FileUploadForm(FlaskForm):
 
     files = MultipleFileField(
         LABEL_FILES,
-        validators=(DataRequired(message=MSG_NO_FILES_SELECTED),),
+        validators=(DataRequired(message=NO_FILES_SELECTED),),
     )
     submit = SubmitField(LABEL_SUBMIT_UPLOAD)
