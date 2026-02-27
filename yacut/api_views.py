@@ -6,6 +6,7 @@ from . import app
 from .error_handlers import InvalidAPIUsage
 from .models import URLMap
 
+ERROR_EMPTY_URL = 'Поле "url" не может быть пустым'
 ERROR_MISSING_REQUEST_BODY = 'Отсутствует тело запроса'
 ERROR_MISSING_URL_FIELD = '"url" является обязательным полем!'
 ERROR_SHORT_ID_NOT_FOUND = 'Указанный id не найден'
@@ -17,10 +18,10 @@ def create_short_link():
     data = request.get_json()
     if data is None:
         raise InvalidAPIUsage(ERROR_MISSING_REQUEST_BODY)
-    if 'url' not in data or None:
+    if 'url' not in data:
         raise InvalidAPIUsage(ERROR_MISSING_URL_FIELD)
-    if data['url'] is None:
-        raise InvalidAPIUsage(ERROR_MISSING_URL_FIELD)
+    if not data['url'] or not data['url'].strip():
+        raise InvalidAPIUsage(ERROR_EMPTY_URL)
     try:
         return jsonify(
             {
@@ -31,7 +32,7 @@ def create_short_link():
                 ).get_short_url()
             }
         ), HTTPStatus.CREATED
-    except Exception as e:
+    except (RuntimeError, ValueError) as e:
         raise InvalidAPIUsage(str(e))
 
 

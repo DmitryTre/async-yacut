@@ -14,9 +14,14 @@ INPUT_VALIDATION_REGEX = f'^[{VALID_CHARS}]*$'
 
 DISK_TOKEN = os.getenv('DISK_TOKEN')
 
-
-REQUEST_UPLOAD_URL = f'{Config.API_HOST}{Config.API_VERSION}/disk/resources/upload'
-DOWNLOAD_LINK_URL = f'{Config.API_HOST}{Config.API_VERSION}/disk/resources/download'
+REQUEST_UPLOAD_URL = (
+    f'{Config.API_HOST}{Config.API_VERSION}'
+    '/disk/resources/upload'
+)
+DOWNLOAD_LINK_URL = (
+    f'{Config.API_HOST}{Config.API_VERSION}'
+    '/disk/resources/download'
+)
 HEADERS = {
     'Accept': 'application/json',
     'Authorization': f'OAuth {Config.DISK_TOKEN}'

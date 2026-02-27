@@ -23,7 +23,7 @@ class YandexDiskUploader:
                 params=params
             ) as resp:
                 resp.raise_for_status()
-                return (await resp.json()['href'])
+                return (await resp.json())['href']
 
     async def upload_file(self, upload_url, file_content):
         """Загружает файл на Яндекс Диск по предоставленному URL."""
@@ -41,7 +41,7 @@ class YandexDiskUploader:
                 response.raise_for_status()
                 if response.status == HTTPStatus.NO_CONTENT:
                     raise ValueError(NO_CONTENT)
-                return (await response.json().get('href'))
+                return (await response.json()).get('href')
 
     async def upload_file_to_ya_disk(self, file):
         """Загружает файл на Яндекс Диск и возвращает публичную ссылку."""

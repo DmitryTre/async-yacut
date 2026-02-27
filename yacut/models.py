@@ -51,16 +51,21 @@ class URLMap(db.Model):
     @staticmethod
     def create(url, short, validate=True, commit=True):
         """Создаёт объект URLMap из данных API-запроса."""
+        if short == '':
+            short = None
         if validate:
             if len(url) > ORIGINAL_LENGTH:
                 raise ValueError(TOO_LONG_URL)
 
-            if short:
+            if short is not None:
                 if short in RESERVED_SHORT or URLMap.get(short):
                     raise ValueError(ERROR_DOUBLE_SHORT_ID)
-                if len(short) > SHORT_LEN or not VALID_SHORT_REGEX.match(short):
+                if len(short) > SHORT_LEN \
+                        or not VALID_SHORT_REGEX.match(short):
                     raise ValueError(INVALID_SHORT)
-        else:
+            else:
+                short = URLMap.get_unique_short()
+        elif short is None:
             short = URLMap.get_unique_short()
 
         url_map = URLMap(original=url, short=short)

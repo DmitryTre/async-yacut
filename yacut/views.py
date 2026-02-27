@@ -46,7 +46,8 @@ async def upload_files():
                 {
                     'name': file.filename,
                     'short': URLMap.create(
-                        url=direct_url
+                        url=direct_url,
+                        short=URLMap.get_unique_short()
                     ).get_short_url()
                 }
                 for file, direct_url in zip(files, urls)
