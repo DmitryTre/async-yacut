@@ -1,4 +1,4 @@
-import os
+import re
 import string
 
 from settings import Config
@@ -11,8 +11,7 @@ MAX_GENERATION_ATTEMPTS = 100
 VALID_CHARS = string.ascii_lowercase + string.digits
 RESERVED_SHORT = {'files'}
 INPUT_VALIDATION_REGEX = f'^[{VALID_CHARS}]*$'
-
-DISK_TOKEN = os.getenv('DISK_TOKEN')
+VALID_SHORT_REGEX = re.compile(f'^[{re.escape(VALID_CHARS)}]+$')
 
 REQUEST_UPLOAD_URL = (
     f'{Config.API_HOST}{Config.API_VERSION}'

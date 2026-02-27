@@ -7,26 +7,28 @@ from yacut import app
 from yacut.constants import REDIRECT_ENDPOINT
 from yacut.forms import FileUploadForm, HeadURLForm
 from yacut.models import URLMap
-from yacut.yandex_disk import YandexDiskUploader
+from yacut.yandex_disk import upload_files as upload_files_to_disk
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     """Отображает форму создания короткой ссылки и обрабатывает её отправку."""
     form = HeadURLForm()
-    if form.validate_on_submit():
-        try:
-            return render_template(
-                'index.html',
-                form=form,
-                short=URLMap.create(
-                    form.original_link.data,
-                    form.custom_id.data
-                ).get_short_url()
-            )
-        except (RuntimeError, ValueError) as e:
-            flash(str(e), 'error')
-    return render_template('index.html', form=form)
+    if not form.validate_on_submit():
+        return render_template('index.html', form=form)
+    try:
+        return render_template(
+            'index.html',
+            form=form,
+            short=URLMap.create(
+                url=form.original_link.data,
+                short=form.custom_id.data,
+                commit=True
+            ).get_short_url()
+        )
+    except (RuntimeError, ValueError) as e:
+        flash(str(e), 'error')
+        return render_template('index.html', form=form)
 
 
 @app.route('/files/', methods=['GET', 'POST'], strict_slashes=False)
@@ -36,9 +38,12 @@ async def upload_files():
     if not form.validate_on_submit():
         return render_template('upload_files.html', form=form)
     files = form.files.data
-    uploader = YandexDiskUploader()
     try:
-        urls = await uploader.upload_files(files)
+        urls = await upload_files_to_disk(files)
+    except (RuntimeError, ValueError) as e:
+        flash(str(e), 'error')
+        return render_template('upload_files.html', form=form)
+    try:
         return render_template(
             'upload_files.html',
             form=form,
@@ -47,7 +52,8 @@ async def upload_files():
                     'name': file.filename,
                     'short': URLMap.create(
                         url=direct_url,
-                        short=URLMap.get_unique_short()
+                        short=None,
+                        commit=False
                     ).get_short_url()
                 }
                 for file, direct_url in zip(files, urls)

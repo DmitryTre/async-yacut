@@ -15,7 +15,7 @@ FIELD_REQUIRED = 'Поле обязательно для заполнения'
 URL_TOO_LONG = 'Ссылка длиннее {ORIGINAL_LENGTH} символов'
 SHORT_TOO_LONG = 'ID длиннее {SHORT_LEN} символов'
 NO_FILES_SELECTED = 'Выберите хотя бы один файл'
-INVALID_SHORT_ID_CHARS = 'Недопустимые символы в ID'
+INVALID_SHORT_CHARS = 'Недопустимые символы в ID'
 
 # Подписи полей форм
 LABEL_ORIGINAL_LINK = 'Оригинальная ссылка'
@@ -45,7 +45,7 @@ class HeadURLForm(FlaskForm):
         validators=(
             Regexp(
                 regex=INPUT_VALIDATION_REGEX,
-                message=INVALID_SHORT_ID_CHARS
+                message=INVALID_SHORT_CHARS
             ),
             Length(
                 max=SHORT_LEN,

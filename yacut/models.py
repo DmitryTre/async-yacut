@@ -1,7 +1,6 @@
 
 from datetime import datetime, timezone
 import random
-import re
 
 from flask import url_for
 
@@ -14,6 +13,7 @@ from yacut.constants import (
     SHORT,
     SHORT_LEN,
     VALID_CHARS,
+    VALID_SHORT_REGEX
 )
 
 TOO_LONG_URL = (
@@ -23,7 +23,6 @@ TOO_LONG_URL = (
 ERROR_DOUBLE_SHORT_ID = 'Предложенный вариант короткой ссылки уже существует.'
 ERROR_GENERATION_FAILED = 'Сбой генерации после {MAX_GENERATION_ATTEMPTS} раз'
 INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
-VALID_SHORT_REGEX = re.compile(f'^[{re.escape(VALID_CHARS)}]+$')
 
 
 class URLMap(db.Model):
@@ -51,8 +50,6 @@ class URLMap(db.Model):
     @staticmethod
     def create(url, short, validate=True, commit=True):
         """Создаёт объект URLMap из данных API-запроса."""
-        if short == '':
-            short = None
         if validate:
             if len(url) > ORIGINAL_LENGTH:
                 raise ValueError(TOO_LONG_URL)
@@ -60,8 +57,8 @@ class URLMap(db.Model):
             if short is not None:
                 if short in RESERVED_SHORT or URLMap.get(short):
                     raise ValueError(ERROR_DOUBLE_SHORT_ID)
-                if len(short) > SHORT_LEN \
-                        or not VALID_SHORT_REGEX.match(short):
+                if (len(short) > SHORT_LEN
+                        or not VALID_SHORT_REGEX.match(short)):
                     raise ValueError(INVALID_SHORT)
             else:
                 short = URLMap.get_unique_short()
