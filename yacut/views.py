@@ -1,7 +1,7 @@
 from http import HTTPStatus
-import yaml
+import os
 
-from flask import abort, flash, redirect, render_template
+from flask import abort, flash, redirect, render_template, send_file
 
 from yacut import app
 from yacut.constants import REDIRECT_ENDPOINT
@@ -14,20 +14,19 @@ from yacut.yandex_disk import YandexDiskUploader
 def index_view():
     """Отображает форму создания короткой ссылки и обрабатывает её отправку."""
     form = HeadURLForm()
-    if not form.validate_on_submit():
-        return render_template('index.html', form=form)
-    try:
-        return render_template(
-            'index.html',
-            form=form,
-            short=URLMap.create(
-                form.original_link.data,
-                form.custom_id.data
-            ).get_short_url()
-        )
-    except (RuntimeError, ValueError) as e:
-        flash(str(e), 'error')
-        return render_template('index.html', form=form)
+    if form.validate_on_submit():
+        try:
+            return render_template(
+                'index.html',
+                form=form,
+                short=URLMap.create(
+                    form.original_link.data,
+                    form.custom_id.data
+                ).get_short_url()
+            )
+        except (RuntimeError, ValueError) as e:
+            flash(str(e), 'error')
+    return render_template('index.html', form=form)
 
 
 @app.route('/files/', methods=['GET', 'POST'], strict_slashes=False)
@@ -38,25 +37,20 @@ async def upload_files():
         return render_template('upload_files.html', form=form)
     files = form.files.data
     uploader = YandexDiskUploader()
-
-    file_names = [file.filename for file in files]
     try:
-        urls_set = await uploader.upload_files(files)
-        uploaded_files = []
-        for filename, direct_url in zip(file_names, urls_set):
-            short_url = URLMap.create(
-                url=direct_url,
-                short=None
-            ).get_short_url()
-            uploaded_files.append({
-                'name': filename,
-                'short': short_url
-            })
-
+        urls = await uploader.upload_files(files)
         return render_template(
             'upload_files.html',
             form=form,
-            uploaded_files=uploaded_files
+            uploaded_files=[
+                {
+                    'name': file.filename,
+                    'short': URLMap.create(
+                        url=direct_url
+                    ).get_short_url()
+                }
+                for file, direct_url in zip(files, urls)
+            ]
         )
     except (RuntimeError, ValueError) as e:
         flash(str(e), 'error')
@@ -74,10 +68,8 @@ def redirect_to_url(short):
 @app.route('/help')
 def help_page():
     """Маршрут для отображения страницы справки."""
-    with open('openapi.yml', 'r', encoding='utf-8') as f:
-        openapi_data = yaml.safe_load(f)
-    return render_template('help.html', openapi_content=yaml.dump(
-        openapi_data,
-        default_flow_style=False,
-        allow_unicode=True)
+    return send_file(
+        os.path.join(os.path.dirname(__file__), 'openapi.yml'),
+        mimetype='text/yaml',
+        as_attachment=False
     )

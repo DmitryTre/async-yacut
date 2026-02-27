@@ -13,7 +13,7 @@
 <body>
 <!-- Блок для flash-сообщений -->
   {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
+    {% if messages %}
     <div class="row mb-3">
       <div class="col-sm"></div>
       <div class="col-sm">
@@ -26,8 +26,8 @@
       </div>
       <div class="col-sm"></div>
     </div>
-  {% endif %}
-{% endwith %}
+    {% endif %}
+  {% endwith %}
     
     {% include "header.html" %}
         {% block content %}

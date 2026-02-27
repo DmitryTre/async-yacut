@@ -1,8 +1,10 @@
 from http import HTTPStatus
+
 from flask import jsonify, render_template, request
 
 from . import app, db
-from .constants import ERROR_MISSING_REQUEST_BODY
+
+ERROR_MISSING_REQUEST_BODY = 'Отсутствует тело запроса'
 
 
 class InvalidAPIUsage(Exception):

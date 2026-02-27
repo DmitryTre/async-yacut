@@ -10,3 +10,4 @@ class Config(object):
     DISK_TOKEN = os.getenv('DISK_TOKEN')
     YA_CUT_BASE_PATH = 'ya_cut/'
     API_VERSION = 'v1'
+    API_HOST = 'https://cloud-api.yandex.net/'

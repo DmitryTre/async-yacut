@@ -1,6 +1,7 @@
 
 from datetime import datetime, timezone
 import random
+import re
 
 from flask import url_for
 
@@ -9,7 +10,7 @@ from yacut.constants import (
     MAX_GENERATION_ATTEMPTS,
     ORIGINAL_LENGTH,
     REDIRECT_ENDPOINT,
-    RESERVED_IDS,
+    RESERVED_SHORT,
     SHORT,
     SHORT_LEN,
     VALID_CHARS,
@@ -22,6 +23,7 @@ TOO_LONG_URL = (
 ERROR_DOUBLE_SHORT_ID = 'Предложенный вариант короткой ссылки уже существует.'
 ERROR_GENERATION_FAILED = 'Сбой генерации после {MAX_GENERATION_ATTEMPTS} раз'
 INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
+VALID_SHORT_REGEX = re.compile(f'^[{re.escape(VALID_CHARS)}]+$')
 
 
 class URLMap(db.Model):
@@ -41,29 +43,30 @@ class URLMap(db.Model):
         """Генерирует уникальный короткий ID для ссылки."""
         for _ in range(MAX_GENERATION_ATTEMPTS):
             short = ''.join(random.choices(VALID_CHARS, k=SHORT))
-            if (short not in RESERVED_IDS and
-                    not URLMap.query.filter_by(short=short).first()):
+            if (short not in RESERVED_SHORT and
+                    not URLMap.get(short)):
                 return short
         raise RuntimeError(ERROR_GENERATION_FAILED)
 
     @staticmethod
-    def create(url, short, validate=True):
+    def create(url, short, validate=True, commit=True):
         """Создаёт объект URLMap из данных API-запроса."""
-        if len(url) > ORIGINAL_LENGTH:
-            raise ValueError(TOO_LONG_URL)
+        if validate:
+            if len(url) > ORIGINAL_LENGTH:
+                raise ValueError(TOO_LONG_URL)
 
-        if short:
-            if short in RESERVED_IDS or URLMap.get(short):
-                raise ValueError(ERROR_DOUBLE_SHORT_ID)
-            if len(short) > SHORT_LEN:
-                raise ValueError(INVALID_SHORT)
-            if not all(char in VALID_CHARS for char in short):
-                raise ValueError(INVALID_SHORT)
+            if short:
+                if short in RESERVED_SHORT or URLMap.get(short):
+                    raise ValueError(ERROR_DOUBLE_SHORT_ID)
+                if len(short) > SHORT_LEN or not VALID_SHORT_REGEX.match(short):
+                    raise ValueError(INVALID_SHORT)
         else:
             short = URLMap.get_unique_short()
 
         url_map = URLMap(original=url, short=short)
         db.session.add(url_map)
+        if commit:
+            db.session.commit()
         return url_map
 
     @staticmethod
@@ -72,22 +75,7 @@ class URLMap(db.Model):
         return URLMap.query.filter_by(short=short).first()
 
     def get_short_url(self):
-        """Рассчитывает полный URL короткой ссылки (обычный метод)."""
+        """Рассчитывает полный URL короткой ссылки."""
         return url_for(
             REDIRECT_ENDPOINT, short=self.short, _external=True
         )
-
-    @staticmethod
-    def create_batch(urls, shorts=None):
-        """Создаёт пакет записей URLMap с одним коммитом в конце."""
-        url_maps = []
-
-        if shorts is None:
-            shorts = [None] * len(urls)
-
-        for url, short in zip(urls, shorts):
-            url_map = URLMap.create(url, short)
-            url_maps.append(url_map)
-
-        db.session.commit()
-        return url_maps

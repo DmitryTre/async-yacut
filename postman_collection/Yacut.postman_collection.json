@@ -347,7 +347,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"url\": \"https://regex101.com/\",\n    \"custom_id\": \"inv@lidChar$\"\n}",
+							"raw": "{\n    \"url\": \"https://INPUT_VALIDATION_REGEX101.com/\",\n    \"custom_id\": \"inv@lidChar$\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

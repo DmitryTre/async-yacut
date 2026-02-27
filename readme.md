@@ -35,9 +35,7 @@ API для создания коротких ссылок программно.
 
 -PostgreSQL или SQLite (для хранения ссылок)
 
-### СУБД (PostgreSQL или SQLite):
-
-для PostgreSQL: установить сервер БД, создать базу данных и пользователя с правами доступа;
+### СУБД:
 
 для SQLite: ничего дополнительно настраивать не нужно — файл БД будет создан автоматически в директории проекта.
 
@@ -50,6 +48,10 @@ git clone git@github.com:DmitryTre/async-yacut.git
 ```
 
 ### Cоздать и активировать виртуальное окружение:
+
+```
+cd async-yacut
+```
 
 ```
 python3 -m venv venv
@@ -105,4 +107,4 @@ flask run
 ### Автор:
 Дмитрий Трегубов [DmitryTre](https://github.com/DmitryTre)
 
-Контактная информация: diamonbusiness@gmail.com
+[Контактная информация](diamonbusiness@gmail.com)

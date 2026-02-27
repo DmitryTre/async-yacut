@@ -6,20 +6,20 @@ from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 from .constants import (
     ORIGINAL_LENGTH,
-    REGEX,
+    INPUT_VALIDATION_REGEX,
     SHORT_LEN,
 )
 
 # Сообщения для валидации форм
 FIELD_REQUIRED = 'Поле обязательно для заполнения'
 URL_TOO_LONG = 'Ссылка длиннее {ORIGINAL_LENGTH} символов'
-SHORT_ID_TOO_LONG = 'ID длиннее {SHORT_LEN} символов'
+SHORT_TOO_LONG = 'ID длиннее {SHORT_LEN} символов'
 NO_FILES_SELECTED = 'Выберите хотя бы один файл'
 INVALID_SHORT_ID_CHARS = 'Недопустимые символы в ID'
 
 # Подписи полей форм
 LABEL_ORIGINAL_LINK = 'Оригинальная ссылка'
-LABEL_CUSTOM_ID = 'Ваш вариант короткой ссылки'
+LABEL_SHORT = 'Ваш вариант короткой ссылки'
 LABEL_FILES = 'Выберите файлы для загрузки'
 
 # Надписи кнопок
@@ -41,15 +41,15 @@ class HeadURLForm(FlaskForm):
         ),
     )
     custom_id = StringField(
-        LABEL_CUSTOM_ID,
+        LABEL_SHORT,
         validators=(
             Regexp(
-                regex=REGEX,
+                regex=INPUT_VALIDATION_REGEX,
                 message=INVALID_SHORT_ID_CHARS
             ),
             Length(
                 max=SHORT_LEN,
-                message=SHORT_ID_TOO_LONG
+                message=SHORT_TOO_LONG
             ),
             Optional()
         )
