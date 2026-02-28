@@ -48,12 +48,11 @@ class URLMap(db.Model):
         raise RuntimeError(ERROR_GENERATION_FAILED)
 
     @staticmethod
-    def create(url, short, validate=True, commit=True):
+    def create(url, short=None, validate=True, commit=True):
         """Создаёт объект URLMap из данных API-запроса."""
         if validate:
             if len(url) > ORIGINAL_LENGTH:
                 raise ValueError(TOO_LONG_URL)
-
             if short:
                 if (len(short) > SHORT_LEN
                         or not VALID_SHORT_REGEX.match(short)):
