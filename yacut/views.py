@@ -23,7 +23,7 @@ def index_view():
             short=URLMap.create(
                 url=form.original_link.data,
                 short=form.custom_id.data,
-                commit=True
+                validate=False
             ).get_short_url()
         )
     except (RuntimeError, ValueError) as e:
@@ -52,8 +52,7 @@ async def upload_files():
                     'name': file.filename,
                     'short': URLMap.create(
                         url=direct_url,
-                        short=None,
-                        commit=False
+                        commit=True
                     ).get_short_url()
                 }
                 for file, direct_url in zip(files, urls)
