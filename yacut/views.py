@@ -23,7 +23,7 @@ def index_view():
             short=URLMap.create(
                 url=form.original_link.data,
                 short=form.custom_id.data,
-                validate=True
+                skip_form_validations=True
             ).get_short_url()
         )
     except (RuntimeError, ValueError) as e:
@@ -38,6 +38,9 @@ async def upload_files():
     if not form.validate_on_submit():
         return render_template('upload_files.html', form=form)
     files = form.files.data
+    if not files:
+        flash('Не выбрано ни одного файла для загрузки', 'error')
+        return render_template('upload_files.html', form=form)
     try:
         urls = await upload_files_to_disk(files)
     except (RuntimeError, ValueError) as e:
@@ -52,7 +55,7 @@ async def upload_files():
                     'name': file.filename,
                     'short': URLMap.create(
                         url=direct_url,
-                        commit=True
+                        commit=(file == files[-1])
                     ).get_short_url()
                 }
                 for file, direct_url in zip(files, urls)

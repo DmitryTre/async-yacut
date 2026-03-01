@@ -28,7 +28,7 @@ def create_short_link():
                 'url': data['url'],
                 'short_link': URLMap.create(
                     url=data['url'],
-                    short=data.get('custom_id')
+                    short=data.get('custom_id'),
                 ).get_short_url()
             }
         ), HTTPStatus.CREATED

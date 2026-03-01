@@ -20,8 +20,8 @@ TOO_LONG_URL = (
     'Длина URL не должна превышать'
     f'{ORIGINAL_LENGTH} символов'
 )
-ERROR_DOUBLE_SHORT_ID = 'Предложенный вариант короткой ссылки уже существует.'
-ERROR_GENERATION_FAILED = 'Сбой генерации после {MAX_GENERATION_ATTEMPTS} раз'
+ERROR_DOUBLE_SHORT = 'Предложенный вариант короткой ссылки уже существует.'
+ERROR_GENERATION_FAILED = f'Сбой генерации после {MAX_GENERATION_ATTEMPTS} раз'
 INVALID_SHORT = 'Указано недопустимое имя для короткой ссылки'
 
 
@@ -48,19 +48,22 @@ class URLMap(db.Model):
         raise RuntimeError(ERROR_GENERATION_FAILED)
 
     @staticmethod
-    def create(url, short=None, validate=True, commit=True):
+    def create(url, short=None, skip_form_validations=False, commit=True):
         """Создаёт объект URLMap из данных API-запроса."""
-        if validate:
+        if not skip_form_validations:
             if len(url) > ORIGINAL_LENGTH:
                 raise ValueError(TOO_LONG_URL)
             if short:
                 if (len(short) > SHORT_LEN
                         or not VALID_SHORT_REGEX.match(short)):
                     raise ValueError(INVALID_SHORT)
-                if short in RESERVED_SHORT or URLMap.get(short):
-                    raise ValueError(ERROR_DOUBLE_SHORT_ID)
-            else:
-                short = URLMap.get_unique_short()
+        if short:
+            if short in RESERVED_SHORT or URLMap.get(short):
+                raise ValueError(ERROR_DOUBLE_SHORT)
+            if URLMap.query.filter_by(short=short).first():
+                raise ValueError(ERROR_DOUBLE_SHORT)
+        if short is None:
+            short = URLMap.get_unique_short()
         url_map = URLMap(original=url, short=short)
         db.session.add(url_map)
         if commit:
