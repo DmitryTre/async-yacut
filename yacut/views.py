@@ -38,12 +38,9 @@ async def upload_files():
     if not form.validate_on_submit():
         return render_template('upload_files.html', form=form)
     files = form.files.data
-    if not files:
-        flash('Не выбрано ни одного файла для загрузки', 'error')
-        return render_template('upload_files.html', form=form)
     try:
         urls = await upload_files_to_disk(files)
-    except (RuntimeError, ValueError) as e:
+    except Exception as e:
         flash(str(e), 'error')
         return render_template('upload_files.html', form=form)
     try:

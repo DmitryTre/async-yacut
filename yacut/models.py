@@ -48,9 +48,9 @@ class URLMap(db.Model):
         raise RuntimeError(ERROR_GENERATION_FAILED)
 
     @staticmethod
-    def create(url, short=None, skip_form_validations=False, commit=True):
+    def create(url, short=None, skip_validations=False, commit=True):
         """Создаёт объект URLMap из данных API-запроса."""
-        if not skip_form_validations:
+        if not skip_validations:
             if len(url) > ORIGINAL_LENGTH:
                 raise ValueError(TOO_LONG_URL)
             if short:
@@ -59,8 +59,6 @@ class URLMap(db.Model):
                     raise ValueError(INVALID_SHORT)
         if short:
             if short in RESERVED_SHORT or URLMap.get(short):
-                raise ValueError(ERROR_DOUBLE_SHORT)
-            if URLMap.query.filter_by(short=short).first():
                 raise ValueError(ERROR_DOUBLE_SHORT)
         if short is None:
             short = URLMap.get_unique_short()
